@@ -472,7 +472,7 @@ def main1(args):
             exe_dict["cartddg"] = cartesian_ddg_exe
             break
     relax_exe = os.popen("which relax.mpi.linuxgccrelease").read().replace("\n", "")
-    rosettadb = os.popen("echo $ROSETTADB").read().replace("\n", "")
+    rosettadb = os.popen("echo $ROSETTA3_DB").read().replace("\n", "")
     if not rosettadb:
         rosettadb = "/".join(relax_exe.split("/")[:-4]) + "/database/"
     exe_dict["relax"] = relax_exe
