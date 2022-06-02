@@ -9,6 +9,9 @@ import time
 import numpy as np
 import utils.common as common
 # from .common import *
+from grape_phaseI import find_rosetta
+
+
 
 
 class Rosetta:
@@ -27,7 +30,7 @@ class Rosetta:
         # self.relaxedpdb = pdbName #for test
         self.rosettadb = rosettadb
         self.relaxedpdb: str  # for test
-
+        self.rosetta_build =find_rosetta()
         # self.cutoff = cutOff
         self.result = []
 
@@ -60,7 +63,7 @@ class Rosetta:
             [
                 "mpirun --use-hwthread-cpus -np "
                 + str(relax_threads)
-                + " relax.mpi.linuxgccrelease -s "
+                + f" relax.mpi.{self.rosetta_build} -s "
                 + self.pdbname
                 + " -use_input_sc",
                 " -constrain_relax_to_start_coords -ignore_unrecognized_res",
@@ -166,14 +169,14 @@ class Rosetta:
             pass
         else:
             pmut_scan_exe = (
-                os.popen("which pmut_scan_parallel.mpi.linuxgccrelease")
+                os.popen(f"which pmut_scan_parallel.mpi.{self.rosetta_build}")
                     .read()
                     .replace("\n", "")
             )
             rosettadb = "/".join(pmut_scan_exe.split("/")[:-3]) + "/database/"
             arg_list = [
                 "mpirun",
-                "-np",
+                "--use-hwthread-cpus -np",
                 str(self.threads),
                 pmut_scan_exe,
                 "-database",
@@ -241,8 +244,11 @@ class rosetta_binder:
     def __init__(self):
         pass
 
+
+
     @staticmethod
     def relax(pdbname, threads, relax_num):
+        rosetta_build = find_rosetta()
         distutils.dir_util.mkpath(common.ROSETTA_RELAX_DIR)
         os.system("cp  " + pdbname + " " + common.ROSETTA_RELAX_DIR)
         os.chdir(common.ROSETTA_RELAX_DIR)
@@ -261,7 +267,7 @@ class rosetta_binder:
             [
                 "mpirun -n "
                 + threads
-                + " relax.mpi.linuxgccrelease -s "
+                + f" relax.mpi.{rosetta_build} -s "
                 + pdbname
                 + " -use_input_sc",
                 " -constrain_relax_to_start_coords -ignore_unrecognized_res",

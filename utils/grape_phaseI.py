@@ -6,7 +6,7 @@ import json
 import logging
 import os
 import time
-
+import pathlib
 import pandas as pd
 from joblib import Parallel, delayed
 
@@ -20,6 +20,27 @@ from utils.common import *
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s   %(levelname)s   %(message)s')
+
+
+def find_rosetta():
+    ROSETTA_BIN_DIR = os.environ.get('ROSETTA_BIN')
+
+    assert ROSETTA_BIN_DIR != None
+    ROSETTA_BIN_DIR = pathlib.Path(ROSETTA_BIN_DIR).resolve()
+
+    print(ROSETTA_BIN_DIR)
+
+    bin_list = [bin for bin in os.listdir(ROSETTA_BIN_DIR) if bin.startswith('rosetta_scripts') and 'mpi' in bin]
+    print(bin_list)
+
+    if not len([bin for bin in bin_list if bin.endswith('release')]):
+
+        for bin in bin_list:
+            if bin.endswith('release'):
+                return (bin.split('.')[-1])
+    else:
+        for bin in bin_list:
+            return (bin.split('.')[-1])
 
 
 class GRAPE:
@@ -399,6 +420,7 @@ def runMD(platform, selected_dict, md_threads=None):
 
 
 def main1(args):
+    rosetta_build=find_rosetta()
     pdb = args.pdb
     chain = args.chain
     threads = int(args.threads)
@@ -456,7 +478,7 @@ def main1(args):
     foldx_exe = os.popen("which foldx").read().replace("\n", "")
     exe_dict["foldx"] = foldx_exe
     pmut_scan_parallel_exe = (
-        os.popen("which pmut_scan_parallel.mpi.linuxgccrelease")
+        os.popen(f"which pmut_scan_parallel.mpi.{rosetta_build}")
             .read()
             .replace("\n", "")
     )
@@ -464,14 +486,14 @@ def main1(args):
     exe_dict["pmut"] = pmut_scan_parallel_exe
     for release in ["", ".static", ".mpi", ".default"]:
         cartesian_ddg_exe = (
-            os.popen("which cartesian_ddg%s.linuxgccrelease" % (release))
+            os.popen(f"which cartesian_ddg%s.{rosetta_build}" % (release))
                 .read()
                 .replace("\n", "")
         )
         if cartesian_ddg_exe != "":
             exe_dict["cartddg"] = cartesian_ddg_exe
             break
-    relax_exe = os.popen("which relax.mpi.linuxgccrelease").read().replace("\n", "")
+    relax_exe = os.popen(f"which relax.mpi.{rosetta_build}").read().replace("\n", "")
     rosettadb = os.popen("echo $ROSETTA3_DB").read().replace("\n", "")
     if not rosettadb:
         rosettadb = "/".join(relax_exe.split("/")[:-4]) + "/database/"
@@ -486,16 +508,16 @@ def main1(args):
     for soft in softlist:
         if soft == "rosetta":
             if exe_dict["relax"] == "":
-                logging.error("Cannot find Rosetta: relax.mpi.linuxgccrelease!")
+                logging.error(f"Cannot find Rosetta: relax.mpi.{rosetta_build}!")
                 exit()
             if preset == "slow":
                 if exe_dict["cartddg"] == "":
                     logging.error(
-                        "Cannot find Rosetta: any cartesian_ddg.linuxgccrelease (mpi nor default nor static)!")
+                        f"Cannot find Rosetta: any cartesian_ddg.{rosetta_build} (mpi nor default nor static)!")
                     exit()
             if preset == "fast":
                 if exe_dict["pmut"] == "":
-                    logging.error("Cannot find Rosetta: pmut_scan_parallel.mpi.linuxgccrelease!")
+                    logging.error(f"Cannot find Rosetta: pmut_scan_parallel.mpi.{rosetta_build}!")
                     exit()
         else:
             if exe_dict[soft] == "":
