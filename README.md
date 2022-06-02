@@ -34,16 +34,20 @@ Also, **ABACUS** is an outstanding software with great statistical energy functi
 Structures downloaded from RCSB could be erroneous. One of the biggest problems that will directly affect energy calculation is breaks in chains. 
 Here I implemented a loop closure module using **modeller**, a great software with a very long history, as backend.   
 Due to their licenses, I cannot redistribute them here :worried: !  
-To our glad, **openmm** is open source! So the glass is half full :smiley: . Here is a good news, the **ABACUS2** is now available at https://zenodo.org/record/4533424.
+To our glad, **openmm** is open source! So the glass is half full :smiley: . 
+Here is a good news, the **ABACUS2** database is now available at https://zenodo.org/record/4533424. However, the necessary 
+module is not available in the zenodo version, you may use the online server at https://biocomp.ustc.edu.cn/servers/abacus-design.php to run ABACUS2.
   
 **Conda**:
 ```shell
-# create a new conda env
+# clone repo and create a new conda env
+git clone https://github.com/JinyuanSun/DDGScan.git
+cd DDGScan
 conda env create -f environment.yml
 # activate new env
 conda activate ddgscan
-# clone repo and install
-git clone https://github.com/JinyuanSun/DDGScan.git && cd DDGScan && ./setup.py install
+# install
+./setup.py install
 ```
 **Via Pip**
 ```shell
@@ -223,9 +227,9 @@ Also, "dynamic selection" are supported.
     @more_hydrophobic: mutation to AA more hydrophobic
     @less_hydrophobic: mutation to AA more hydrophilic
     @more_sheet_tendency: mutation to AA with higher sheet tendency
-    @less_sheet_tendency: mutation to AA with higher sheet tendency
+    @less_sheet_tendency: mutation to AA with lower sheet tendency
     @more_helix_tendency: mutation to AA with higher helix tendency
-    @less_helix_tendency: mutation to AA with higher helix tendency
+    @less_helix_tendency: mutation to AA with lower helix tendency
     @{random}: random is an integer in range 1 to 19 ,randomly select few mutations for you, good luck!
 ```
 An example mutation list file is a plain text file seperated with space,
